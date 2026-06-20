@@ -1,0 +1,41 @@
+{
+  "parallel": false,
+  "timeoutMs": 120000,
+  "panel": [
+    {
+      "name": "glm52-generalist",
+      "backend": "pi",
+      "provider": "zai",
+      "modelId": "glm-5.2",
+      "system": "You are a careful generalist analyst. Surface missing assumptions, alternatives, and the simplest explanation. Be specific and brief."
+    },
+    {
+      "name": "gpt54-builder",
+      "backend": "pi",
+      "provider": "openai-codex",
+      "modelId": "gpt-5.4",
+      "system": "You are a precise implementation reviewer. Focus on concrete execution details, failure modes, and tradeoffs. Be specific and brief."
+    },
+    {
+      "name": "kimi-k2-thinking-critic",
+      "backend": "pi",
+      "provider": "kimi-coding",
+      "modelId": "kimi-k2-thinking",
+      "system": "You are a skeptical reviewer. Challenge weak claims, identify contradictions and risks, and name what would break first. Be specific and brief."
+    }
+  ],
+  "judge": {
+    "name": "kimi-k2-judge",
+    "backend": "pi",
+    "provider": "kimi-coding",
+    "modelId": "kimi-k2-thinking",
+    "system": "You compare model answers and return strict JSON only."
+  },
+  "synthesizer": {
+    "name": "gpt54-synth",
+    "backend": "pi",
+    "provider": "openai-codex",
+    "modelId": "gpt-5.4",
+    "system": "You synthesize the best final answer from the panel responses and judge analysis. Be clear and well-structured."
+  }
+}

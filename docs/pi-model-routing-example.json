@@ -1,0 +1,48 @@
+{
+  "schema_version": "1.0",
+  "model_roster": {
+    "fast-local": {
+      "base_url": "http://localhost:11434/v1",
+      "api_key_env": null,
+      "model": "qwen2.5:7b",
+      "kind": "local",
+      "best_for": ["exploration", "heartbeat", "summaries"]
+    },
+    "coder-local": {
+      "base_url": "http://localhost:11434/v1",
+      "api_key_env": null,
+      "model": "qwen2.5-coder:14b",
+      "kind": "local",
+      "best_for": ["implementation", "code-review"]
+    },
+    "reasoning-remote": {
+      "base_url": "https://api.openai.com/v1",
+      "api_key_env": "OPENAI_API_KEY",
+      "model": "configured-strong-reasoner",
+      "kind": "remote",
+      "best_for": ["critique", "synthesis"]
+    }
+  },
+  "role_model_policy": {
+    "Explorer": {
+      "preferred": "fast-local",
+      "fallback_order": ["coder-local"]
+    },
+    "Builder": {
+      "preferred": "coder-local",
+      "fallback_order": ["reasoning-remote"]
+    },
+    "Critic": {
+      "preferred": "reasoning-remote",
+      "fallback_order": ["coder-local"]
+    },
+    "Performance Sentinel": {
+      "preferred": "fast-local",
+      "fallback_order": ["coder-local"]
+    },
+    "Loop Conductor": {
+      "preferred": "reasoning-remote",
+      "fallback_order": ["coder-local"]
+    }
+  }
+}

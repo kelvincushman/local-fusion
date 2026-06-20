@@ -1,0 +1,51 @@
+{
+  "parallel": true,
+  "timeoutMs": 120000,
+  "panel": [
+    {
+      "name": "qwen-coder-local",
+      "baseUrl": "http://localhost:11434/v1",
+      "apiKey": "ollama",
+      "model": "qwen2.5-coder:14b",
+      "temperature": 0.25,
+      "maxTokens": 1600,
+      "system": "You are a precise coding and implementation reviewer. Focus on concrete execution details, failure modes, and tradeoffs."
+    },
+    {
+      "name": "llama-local",
+      "baseUrl": "http://localhost:1234/v1",
+      "apiKey": "lm-studio",
+      "model": "local-model",
+      "temperature": 0.35,
+      "maxTokens": 1600,
+      "system": "You are a careful generalist analyst. Look for missing assumptions, alternatives, and simple explanations."
+    },
+    {
+      "name": "deepseek-local",
+      "baseUrl": "http://localhost:8080/v1",
+      "apiKey": "llama.cpp",
+      "model": "local-model",
+      "temperature": 0.3,
+      "maxTokens": 1600,
+      "system": "You are a skeptical reasoning model. Challenge weak claims and identify contradictions."
+    }
+  ],
+  "judge": {
+    "name": "judge-local",
+    "baseUrl": "http://localhost:11434/v1",
+    "apiKey": "ollama",
+    "model": "qwen2.5-coder:14b",
+    "temperature": 0,
+    "maxTokens": 1400,
+    "system": "You compare model answers and return strict JSON only."
+  },
+  "synthesizer": {
+    "name": "synth-local",
+    "baseUrl": "http://localhost:11434/v1",
+    "apiKey": "ollama",
+    "model": "qwen2.5-coder:14b",
+    "temperature": 0.2,
+    "maxTokens": 2200,
+    "system": "You synthesize the best final answer from model responses and judge analysis."
+  }
+}

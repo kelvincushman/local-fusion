@@ -1,0 +1,53 @@
+{
+  "parallel": false,
+  "timeoutMs": 120000,
+  "model_roster": {
+    "glm52": {
+      "provider": "zai",
+      "modelId": "glm-5.2",
+      "kind": "local"
+    },
+    "kimi-k2": {
+      "provider": "kimi-coding",
+      "modelId": "kimi-k2-thinking",
+      "kind": "local"
+    },
+    "gpt54": {
+      "provider": "openai-codex",
+      "modelId": "gpt-5.4",
+      "kind": "remote"
+    },
+    "opus": {
+      "provider": "anthropic",
+      "modelId": "claude-opus-4-8",
+      "kind": "remote"
+    }
+  },
+  "role_model_policy": {
+    "Explorer": {
+      "preferred": "glm52",
+      "fallback_order": ["kimi-k2"],
+      "reason": "Explorer needs quick repo/state summarization."
+    },
+    "Builder": {
+      "preferred": "gpt54",
+      "fallback_order": ["kimi-k2"],
+      "reason": "Builder needs code-oriented implementation reasoning."
+    },
+    "Critic": {
+      "preferred": "kimi-k2",
+      "fallback_order": ["gpt54"],
+      "reason": "Critic needs adversarial reasoning."
+    },
+    "Performance Sentinel": {
+      "preferred": "glm52",
+      "fallback_order": ["kimi-k2"],
+      "reason": "Performance Sentinel mostly reads heartbeat and progress state."
+    },
+    "Loop Conductor": {
+      "preferred": "gpt54",
+      "fallback_order": ["kimi-k2"],
+      "reason": "Conductor needs the strongest synthesis model available."
+    }
+  }
+}

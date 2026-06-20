@@ -1,0 +1,19 @@
+{
+  "name": "local-fusion",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Run an OpenRouter Fusion-style multi-model council locally through OpenAI-compatible endpoints.",
+  "bin": {
+    "local-fusion": "./src/cli.mjs"
+  },
+  "scripts": {
+    "ask": "node src/cli.mjs ask",
+    "serve": "node src/cli.mjs serve",
+    "mcp": "node src/cli.mjs mcp",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
