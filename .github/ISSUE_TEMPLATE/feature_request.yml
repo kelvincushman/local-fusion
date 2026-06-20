@@ -1,0 +1,60 @@
+name: Feature request
+description: Suggest an idea or enhancement for local-fusion
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the suggestion! Describe the problem first, then the idea — it helps
+        weigh alternatives.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem / motivation
+      description: What are you trying to do that's hard or impossible today?
+      placeholder: I'm always frustrated when ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: What you'd like to happen. Be as concrete as you can (CLI flags, config keys, tool names, etc.).
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      description: Which part would this touch?
+      options:
+        - "ask (one-shot council)"
+        - "serve (OpenAI-compatible endpoint)"
+        - "looped (Looped PI Fusion)"
+        - "mcp (MCP server / Claude Code)"
+        - "Backends / transport (openai or pi)"
+        - "Config / schema"
+        - "Python implementation"
+        - "Docs"
+        - "Other / cross-cutting"
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Other approaches you thought about, and why this one is better.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Confirmations
+      options:
+        - label: I searched existing issues and this isn't a duplicate
+          required: true

@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Question / usage help
+    url: https://github.com/kelvincushman/local-fusion/discussions
+    about: For questions and usage help, please start a discussion instead of opening an issue.
+  - name: Documentation
+    url: https://github.com/kelvincushman/local-fusion#readme
+    about: Setup, configuration, and command reference are in the README.

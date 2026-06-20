@@ -1,0 +1,97 @@
+name: Bug report
+description: Something in local-fusion isn't working as expected
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for filing a bug. Please include concrete evidence (commands, output, config)
+        so it can be reproduced. Redact any real API keys or tokens.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: A clear description of the bug and what you expected instead.
+      placeholder: I ran `... ` and expected ..., but got ...
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      description: Which part of local-fusion is affected?
+      options:
+        - "ask (one-shot council)"
+        - "serve (OpenAI-compatible endpoint)"
+        - "looped (Looped PI Fusion)"
+        - "mcp (MCP server / Claude Code)"
+        - "Backends / transport (openai or pi)"
+        - "Config / schema"
+        - "Python implementation"
+        - "Other / not sure"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: backend
+    attributes:
+      label: Backend
+      description: Which model backend were you using?
+      options:
+        - "openai (local OpenAI-compatible server)"
+        - "pi (subscription / OAuth models)"
+        - "both / mixed"
+        - "N/A"
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: The exact command(s) you ran.
+      placeholder: |
+        1. node src/cli.mjs ask "..."
+        2. ...
+      render: shell
+    validations:
+      required: true
+
+  - type: textarea
+    id: output
+    attributes:
+      label: Output / error
+      description: Relevant output, error message, or `degradation_reasons`. Paste the relevant tail, not the whole log.
+      render: shell
+    validations:
+      required: false
+
+  - type: textarea
+    id: config
+    attributes:
+      label: Config (redacted)
+      description: The relevant part of your config file. Remove any real keys/tokens.
+      render: json
+    validations:
+      required: false
+
+  - type: input
+    id: versions
+    attributes:
+      label: Environment
+      description: OS, Node version (`node -v`), Python version if relevant, and Pi version if using the pi backend.
+      placeholder: "macOS 14, Node v22.x, Python 3.12, pi 0.x"
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Confirmations
+      options:
+        - label: I searched existing issues and this isn't a duplicate
+          required: true
+        - label: My output/config contains no real secrets or tokens
+          required: true
