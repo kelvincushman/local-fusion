@@ -429,6 +429,12 @@ The Node suite covers the fusion core, the looped driver, the MCP connector rout
 - **`pi`-backend calls are serialized** through one subprocess even with `parallel: true`.
 - **GLM quota** can degrade the council — check `degradation_reasons` in `fusion_ask` / `looped_fuse_review` output.
 
+## Contributing
+
+Contributions are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md) for dev setup, the test
+commands, and the PR flow. `main` is protected: all CI checks (Node 20/22, Python 3.10/3.12)
+must pass before merge.
+
 ## License
 
 [MIT](LICENSE) © Kelvin Cushman
