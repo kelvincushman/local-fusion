@@ -1,5 +1,7 @@
 # local-fusion
 
+[![CI](https://github.com/kelvincushman/local-fusion/actions/workflows/ci.yml/badge.svg)](https://github.com/kelvincushman/local-fusion/actions/workflows/ci.yml)
+
 > Run an [OpenRouter **Fusion**](https://openrouter.ai/docs/guides/routing/routers/fusion-router)-style multi-model council **locally** — no OpenRouter, no hosted router, no billing middleman.
 
 `local-fusion` sends one prompt to a panel of models, has a **judge** model compare their answers into structured analysis, then has a **synthesizer** model write the final answer. It runs against any OpenAI-compatible server (Ollama, LM Studio, llama.cpp, vLLM, MLX, LocalAI, …) **and/or** against the subscription models you have configured in [Pi](https://github.com/badlogic/pi) (ChatGPT, Claude, GLM/ZAI, Kimi) — without you holding any API keys.
