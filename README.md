@@ -429,4 +429,4 @@ The Node suite covers the fusion core, the looped driver, the MCP connector rout
 
 ## License
 
-No license file is currently included; treat as all-rights-reserved until one is added.
+[MIT](LICENSE) © Kelvin Cushman
