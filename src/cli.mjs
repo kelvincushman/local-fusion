@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import { createServer } from 'node:http';
+import { readFileSync } from 'node:fs';
 import { loadConfig } from './config.mjs';
 import { runFusion } from './fusion.mjs';
 import { runLoopedFusion } from './looped.mjs';
@@ -9,26 +10,36 @@ import { runMcpServer } from './mcp.mjs';
 
 const command = process.argv[2];
 
-if (!command || command === '--help' || command === '-h') {
+if (command === '--version') {
+  // Write to stdout and let the process drain and exit naturally; calling
+  // process.exit(0) here can truncate piped output before the write flushes.
+  process.stdout.write(`${readVersion()}\n`);
+  process.exitCode = 0;
+} else if (!command || command === '--help' || command === '-h') {
   printHelp();
-  process.exit(0);
+  process.exitCode = 0;
+} else {
+  try {
+    if (command === 'ask') {
+      await ask(process.argv.slice(3));
+    } else if (command === 'looped') {
+      await looped(process.argv.slice(3));
+    } else if (command === 'serve') {
+      await serve(process.argv.slice(3));
+    } else if (command === 'mcp') {
+      await mcp(process.argv.slice(3));
+    } else {
+      throw new Error(`Unknown command: ${command}`);
+    }
+  } catch (error) {
+    console.error(error?.message || String(error));
+    process.exitCode = 1;
+  }
 }
 
-try {
-  if (command === 'ask') {
-    await ask(process.argv.slice(3));
-  } else if (command === 'looped') {
-    await looped(process.argv.slice(3));
-  } else if (command === 'serve') {
-    await serve(process.argv.slice(3));
-  } else if (command === 'mcp') {
-    await mcp(process.argv.slice(3));
-  } else {
-    throw new Error(`Unknown command: ${command}`);
-  }
-} catch (error) {
-  console.error(error?.message || String(error));
-  process.exit(1);
+function readVersion() {
+  const pkgUrl = new URL('../package.json', import.meta.url);
+  return JSON.parse(readFileSync(pkgUrl, 'utf8')).version;
 }
 
 async function ask(args) {
