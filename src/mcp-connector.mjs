@@ -255,10 +255,10 @@ export function parseCheckerOutput(rawOutput) {
     return fallback;
   }
   const status = CHECK_STATUSES.includes(parsed.status) ? parsed.status : 'uncertain';
-  const route = ROUTES.includes(parsed.recommended_route) ? parsed.recommended_route : routeForCheck(status, Number(parsed.confidence ?? 0));
+  const route = ROUTES.includes(parsed.recommended_route) ? parsed.recommended_route : routeForCheck(status, normalizeConfidence(parsed.confidence));
   return {
     status,
-    confidence: clamp01(parsed.confidence),
+    confidence: normalizeConfidence(parsed.confidence),
     missing_requirements: asStringArray(parsed.missing_requirements),
     likely_bugs: asStringArray(parsed.likely_bugs),
     verification_gaps: asStringArray(parsed.verification_gaps),
@@ -433,12 +433,23 @@ function clamp01(value) {
   return Math.max(0, Math.min(1, n));
 }
 
-const CHECKER_SYSTEM = 'You are a senior completion checker. You do not execute code. You verify whether Claude Code/Opus fully completed the objective using only supplied evidence. Return strict JSON only.';
+// Checkers frequently report confidence on a 0-100 scale (e.g. 89) even when the
+// schema asks for 0-1. Naively clamping squashes everything >=1 to exactly 1.0,
+// destroying the signal. Treat clearly-percentage values (>1.5, <=100) as a
+// percentage; values just over 1 (e.g. 1.2) are overflow of a 0-1 scale and clamp.
+export function normalizeConfidence(value) {
+  let n = Number(value);
+  if (!Number.isFinite(n)) return 0;
+  if (n > 1.5 && n <= 100) n /= 100;
+  return Math.max(0, Math.min(1, n));
+}
+
+const CHECKER_SYSTEM = 'You are a senior completion checker. You do not execute code. You verify whether Claude Code/Opus fully completed the objective using only supplied evidence. Be conservative and calibrated: confidence is the probability that EVERY acceptance criterion is genuinely met with no remaining issues, as a decimal from 0 to 1. Unverified claims, "manual testing", missing automated tests, or untested assumptions must lower it. Reserve confidence above 0.8 for work where every criterion has direct evidence. Return strict JSON only.';
 const CONDUCTOR_SYSTEM = 'You are the local-fusion loop conductor. You synthesize checker findings and optional multi-model fusion review into one minimal next instruction for Claude Code/Opus. Return strict JSON only.';
 
 const CHECKER_SCHEMA = {
   status: 'done | incomplete | blocked | uncertain',
-  confidence: 0.0,
+  confidence: '0.0-1.0 decimal; probability ALL criteria are truly met; be conservative, lower for unverified claims',
   missing_requirements: ['evidence-cited unmet acceptance criteria'],
   likely_bugs: ['evidence-cited likely defects'],
   verification_gaps: ['evidence-cited missing proof/tests'],

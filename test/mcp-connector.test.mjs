@@ -51,6 +51,19 @@ test('parseCheckerOutput normalizes malformed and valid checker JSON', () => {
   assert.deepEqual(valid.likely_bugs, ['none']);
 });
 
+test('parseCheckerOutput rescales 0-100 confidence instead of clamping to 1', () => {
+  // A checker reporting "89" means 0.89, not max confidence. The old clamp turned
+  // every percentage into exactly 1.0, destroying the routing signal.
+  const pct = parseCheckerOutput(JSON.stringify({ status: 'done', confidence: 89, recommended_route: 'stop' }));
+  assert.equal(pct.confidence, 0.89);
+
+  const alreadyDecimal = parseCheckerOutput(JSON.stringify({ status: 'done', confidence: 0.42, recommended_route: 'stop' }));
+  assert.equal(alreadyDecimal.confidence, 0.42);
+
+  const low = parseCheckerOutput(JSON.stringify({ status: 'incomplete', confidence: 30, recommended_route: 'direct_retry' }));
+  assert.equal(low.confidence, 0.3);
+});
+
 test('file-backed loop stores reports, checks, and stop decision', async () => {
   const root = mkdtempSync(join(tmpdir(), 'mcp-loop-'));
   const started = await startLoop(root, {
