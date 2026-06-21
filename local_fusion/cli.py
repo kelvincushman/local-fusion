@@ -4,6 +4,7 @@ import argparse
 import json
 import sys
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from pathlib import Path
 from typing import Any
 
 from .core import load_config, run_fusion
@@ -11,8 +12,24 @@ from .looped import run_looped_fusion
 from .pi_transport import create_pi_client
 
 
+def _read_version() -> str:
+    # Single source of truth: read the version from package.json at the repo
+    # root (mirrors the Node CLI). Fall back gracefully if it is unavailable.
+    pkg = Path(__file__).resolve().parent.parent / "package.json"
+    try:
+        return json.loads(pkg.read_text(encoding="utf-8"))["version"]
+    except (OSError, ValueError, KeyError):
+        return "0.0.0+unknown"
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="local-fusion")
+    parser.add_argument(
+        "--version",
+        action="version",
+        version=_read_version(),
+        help="Print the version and exit",
+    )
     subcommands = parser.add_subparsers(dest="command", required=True)
 
     ask_parser = subcommands.add_parser("ask", help="Run one Fusion prompt")
