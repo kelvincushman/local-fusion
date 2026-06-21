@@ -145,34 +145,41 @@ So I did the thing he says almost nobody does. I built a benchmark.
 
 The claim under test is narrow and falsifiable: **does the council catch real issues that a single reviewer misses — and does it beat a *good* single reviewer, not a strawman?**
 
-The harness (`eval/council-vs-checker.mjs`, ~200 lines, no framework) runs three reviewers over **identical frozen evidence**:
+The harness (`eval/council-vs-checker.mjs`, no framework) runs four reviewers over **identical frozen evidence**:
 
 - **Checker** — the production gate: one model, the terse "is this done?" prompt.
-- **Strong single reviewer** — the *same model*, but an exhaustive "list every real bug, gap, security issue, and scope problem" prompt. This is the fair baseline Colin demands.
-- **Council** — panel + judge + synthesizer, same evidence body.
+- **Strong single reviewer** — the *same model*, but an exhaustive "list every real bug, gap, security issue, and scope problem" prompt. The fair baseline Colin demands.
+- **Council (diverse)** — three *different* models as panel, plus a judge and a synthesizer.
+- **Council (same-model)** — the *same structure*, but every panel seat filled by one model. This isolates whether the edge comes from model variety or just from the multi-perspective machinery.
 
-Holding the model fixed between the first two arms isolates the variable: checker-vs-single is *prompt*, single-vs-council is *one perspective vs many*.
+The dataset (`eval/fixtures.mjs`) is seven realistic "build reports" that **meet their acceptance criteria but hide known, planted issues** — Colin's own task themes (rate limiting, csv-sum, debounce, JWT, a React countdown, a SQL lookup) plus the `--version` case — plus one **clean control** with no planted issues, to check the council doesn't just invent problems. This time an **LLM judge** grades each planted issue (a conservative yes/no on whether the review identified it), not a keyword match, and every raw verdict is committed so you can re-grade. Two trials per fixture; the models are non-deterministic.
 
-The dataset (`eval/fixtures.mjs`) is six realistic "build reports" that **meet their acceptance criteria but hide known, planted issues** — deliberately using Colin's own task themes (rate limiting, csv-sum, debounce, JWT auth) plus the `--version` case from this post, plus one **clean control** with no planted issues to check the council doesn't just invent problems. Grading is a coarse, deterministic keyword match (no LLM-as-judge), and every raw output is published so anyone can re-grade. Results are averaged over three trials per fixture because the models are non-deterministic.
+Detection rate of planted issues, LLM-graded, 2 trials per fixture (higher is better):
 
-Detection rate of planted issues, 3 trials per fixture (higher is better):
+| Fixture | Issues | Checker | Single reviewer | Council (diverse) | Council (same-model) |
+|---|---|---|---|---|---|
+| version-flag | 4 | 13% | 25% | **88%** | 88% |
+| fastapi-rate-limit | 4 | 75% | 63% | **100%** | 88% |
+| csv-sum | 3 | 0% | 33% | **50%** | 33% |
+| debounce | 3 | 33% | 50% | **67%** | 67% |
+| jwt-auth | 4 | 75% | 75% | **88%** | 75% |
+| react-countdown | 3 | 100% | 100% | 100% | 100% |
+| sql-user-lookup | 3 | 33% | 33% | 33% | 33% |
+| **Overall** | | **48%** | **54%** | **77%** | **71%** |
 
-| Fixture | Planted issues | Checker | Strong single reviewer | Council |
-|---|---|---|---|---|
-| version-flag | 4 | 17% | 50% | **75%** |
-| fastapi-rate-limit | 4 | 67% | 100% | **100%** |
-| csv-sum | 3 | 0% | 33% | **56%** |
-| debounce | 3 | 33% | 33% | 33% |
-| jwt-auth | 4 | 100% | 100% | **100%** |
-| **Overall** | **18** | **42%** | **64%** | **74%** |
+*(8 fixtures incl. the clean control; 2 trials each, 0 failed; graded by an LLM judge. Raw verdicts in `eval/raw-results.json` — re-grade them yourself.)*
 
-*(One `jwt-auth` trial timed out and was excluded. "Detected" means a planted issue's keyword appears in that arm's output. Raw per-run outputs and `eval/RESULTS.md` are in the repo — re-grade them yourself.)*
+The headline holds, and the better grader made it *bigger*: the diverse council caught **77%** of planted issues versus **54%** for a strong single reviewer on the same evidence — a 23-point gap, wider than the 10 points my crude keyword grader had shown, because an LLM judge credits real catches that a single reviewer just phrases differently. The cheap checker trails at 48%.
 
-I committed to shrinking the claim if the council didn't clearly beat a *strong* single reviewer. So here's the honest read: **it does beat it — by 10 points, not a chasm.** A council of disagreeing models caught more planted issues (74%) than a good single reviewer working from the same evidence (64%), which in turn crushed the cheap production checker (42%).
+Two results I didn't expect:
 
-But look at the rows, because the average hides the texture. On `jwt-auth` and `fastapi-rate-limit` the single reviewer already hit 100% and the council just matched it — extra models bought nothing. On `debounce`, all three tied at 33% and the council added zero. The council's real wins were `version-flag` and `csv-sum`: scope-creep and robustness gaps that a single pass noticed less reliably across trials. And there's a cost — on the clean control with no planted issues, the council and single reviewer each raised ~1 "serious problem" signal on average where the terse checker raised none. More eyes find more, including things that aren't there.
+**Most of the edge is the structure, not the models.** A council built from *one model wearing three role hats* still scored **71%** — only ~6 points behind the three-different-models council (77%). The win comes mainly from forcing independent passes (panel → judge → synthesize); model diversity is a modest top-up, not the engine. If you can't afford three models, you still get most of the benefit from three perspectives on one.
 
-So the council helps most exactly where you'd hope — subtle, easy-to-rationalise-away issues like unrequested scope — and helps least when the problem is either obvious (a good reviewer already catches it) or phrased in a way my coarse keyword grader can't see. That's a real edge, honestly measured, not a revolution.
+**The cheap checker is dangerously overconfident.** Across every run it reported ~1.0 confidence while actually detecting **47%** of the issues. It is *always* sure and *often* wrong, so its confidence is worthless as an escalation signal until it's recalibrated — exactly the failure mode that lets a gate wave bugs through.
+
+And the texture is honest. The council's big wins are subtle, rationalise-away-able issues (`version-flag`: 88% vs the single reviewer's 25%). Where bugs are blatant, everyone ties at the top (`react-countdown`: 100% across the board); where they're hard, everyone ties at the bottom (`sql-user-lookup`: 33% everywhere — even the council missed the SQL-injection framing two times in three). And there's a cost: on clean code with nothing wrong, the diverse council raised a false "serious problem" about half the time, where the single reviewer and checker raised none. More eyes find more, including things that aren't there.
+
+I committed to shrinking the claim if the council didn't clearly beat a strong single reviewer. It did — by 23 points, honestly graded. But the more useful takeaways are the two surprises: **buy the *structure* before you buy the *diversity*, and don't trust a checker's confidence until you've measured it.**
 
 ## What actually made the difference
 
@@ -190,7 +197,7 @@ I'll keep this honest, because the council would.
 
 It costs more tokens than one model — the cheap-gate-then-escalate design bounds that, but a full panel on every trivial edit is waste. It is not a correctness oracle: models that share a blind spot will confidently share a wrong answer, which is why frozen criteria and real test output stay in the loop as ground truth. Someone still has to author honest acceptance criteria; the loop only enforces them.
 
-And the load-bearing caveat, straight from Colin: **effectiveness = skill + model + harness.** These numbers are specific to this model lineup and this harness; a newer model, or a single reviewer with a sharper prompt, could close the gap. The benchmark is small, the grading is coarse, and planted issues are not real pull requests. So treat it as what it is — a reproducible starting point you can run and attack yourself — not a law.
+And the load-bearing caveat, straight from Colin: **effectiveness = skill + model + harness.** These numbers are specific to this model lineup and this harness; a newer model, or a single reviewer with a sharper prompt, could close the gap. The benchmark is small (8 fixtures, 2 trials), the grader is itself an LLM with its own noise, and planted issues are not real pull requests. So treat it as what it is — a reproducible starting point you can run and attack yourself — not a law.
 
 That's the only claim I'll defend: on this dataset, with this harness, a council of disagreeing models caught issues a single reviewer missed, and you can re-run the eval and check.
 
