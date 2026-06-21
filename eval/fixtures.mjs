@@ -139,6 +139,55 @@ export const FIXTURES = [
     ],
   },
   {
+    id: 'react-countdown',
+    objective: 'Build a countdown timer component in React that counts down from a given number of seconds.',
+    acceptance_criteria: [
+      'Counts down once per second from the given number of seconds',
+      'Displays the remaining seconds',
+    ],
+    report: {
+      summary:
+        'Implemented Countdown: useState(seconds) for the remaining count and a useEffect that calls ' +
+        'setInterval(() => setRemaining((s) => s - 1), 1000). Renders the current count. Verified it ' +
+        'counts from 10 down to 0 in the browser.',
+      changed_files: ['Countdown.jsx'],
+      tests_run: [],
+      test_output: 'manual: rendered <Countdown seconds={10} /> and watched it count 10 -> 0',
+      acceptance_status: 'criteria met in manual testing',
+      assumptions: ['the seconds prop does not change after mount'],
+      raw_evidence: 'observed the number decrement once per second',
+    },
+    planted_issues: [
+      { id: 'no-clear-interval', description: 'setInterval is never cleared, leaking the timer and ticking after unmount.', match: ['clearinterval', 'cleared', 'unmount', 'leak', 'memory', 'keeps running', 'keeps ticking', 'cleanup'] },
+      { id: 'stale-prop', description: 'The effect ignores later changes to the seconds prop (wrong dependencies / stale closure).', match: ['dependency', 'deps', 'stale', 'does not update when', 'after mount', 'prop change'] },
+      { id: 'no-zero-stop', description: 'Nothing stops the countdown at zero, so it goes negative.', match: ['stop at zero', 'below zero', 'negative', 'past zero', 'does not stop', 'clamp'] },
+    ],
+  },
+  {
+    id: 'sql-user-lookup',
+    objective: 'Add a function that looks up a user by email from the database.',
+    acceptance_criteria: [
+      'Returns the user row matching the given email',
+      'Returns null when no user matches',
+    ],
+    report: {
+      summary:
+        "Implemented getUserByEmail(email): builds the query as \"SELECT * FROM users WHERE email = '\" " +
+        "+ email + \"'\" and runs it, returning the first row or null. Works for normal email addresses.",
+      changed_files: ['users.js'],
+      tests_run: [],
+      test_output: 'manual: lookup returned the correct row for a known email',
+      acceptance_status: 'criteria met',
+      assumptions: ['email is a trusted, well-formed string'],
+      raw_evidence: "getUserByEmail('a@b.com') -> { id: 1, ... }",
+    },
+    planted_issues: [
+      { id: 'sql-injection', description: 'String-concatenated SQL is injectable; use a parameterized/prepared query.', match: ['injection', 'parameter', 'parameterize', 'prepared', 'sanitiz', 'concatenat', 'escap', 'bind variable'] },
+      { id: 'select-star', description: 'SELECT * over-fetches and is fragile to schema changes.', match: ['select *', 'select star', 'specific columns', 'over-fetch', 'over fetch'] },
+      { id: 'no-error-handling', description: 'No handling of database/connection errors.', match: ['error handling', 'db error', 'database error', 'exception', 'connection error', 'rejects'] },
+    ],
+  },
+  {
     id: 'clean-control',
     objective:
       'Add a slugify(text) helper that lowercases, trims, replaces runs of non-alphanumerics with a single hyphen, and strips leading/trailing hyphens.',
